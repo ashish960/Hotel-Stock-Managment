@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Http\Requests\login;                      //
-use App\Http\Requests\registration;   
+  
 
 
 use App\Services\userService;        //

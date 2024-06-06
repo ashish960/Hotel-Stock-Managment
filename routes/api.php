@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\userController;
-
+use App\Http\Controllers\Api\adminController;
+use App\Http\Controllers\Api\managerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,18 +23,31 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 //login
-Route::middleware(['throttle:login'])->group(function () {          
-    Route::post('admin/login',[userController::class,'adminLogin']);
-    Route::post('customer/login',[userController::class,'customerLogin']);
+Route::middleware(['throttle:login'])->group(function () {  
+
+    Route::post('login',[userController::class,'userLogin']);
     });
     
+
+//admin
+
+Route::middleware(['auth:api','scopes:admin'])->group(function () {  
+    Route::post('admin/addVendor',[adminController::class,'addVendor']);
+    Route::post('admin/addStock',[adminController::class,'addStock']);
+    Route::post('admin/addRecipe',[adminController::class,'addRecipe']);
+    Route::post('admin/addRecipe-Process',[adminController::class,'recipeProcess']);
+    Route::post('admin/viewRecipe',[adminController::class,'viewRecipe']);
+    });
+
+
+
+//manager
     
-    
-    //register
-    Route::middleware(['throttle:login'])->group(function () {          
-        Route::post('customer/registration',[userController::class,'customerRegistration']);
-        Route::post('admin/registration',[userController::class,'adminRegistration']);
-        });
-    
-    
+Route::middleware(['auth:api','throttle:login','scopes:manager'])->group(function () {  
+
+    Route::post('manager/addOrder',[managerController::class,'addOrder']);
+    Route::post('manager/OutwardQuantity',[managerController::class,'addOutward']);
+    Route::get('manager/stockReport',[managerController::class,'viewStockReport']);
+    });
+
     

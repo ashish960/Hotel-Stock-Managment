@@ -18,12 +18,11 @@ class userSeeder extends Seeder
     public function run() {
         $faker=Faker::create();
         $Password = Hash::make('ashish121');
-        $roles = ['admin', 'customer', 'seller'];
+        $roles = ['admin', 'manager'];
 
-        for($i=1;$i<=100;$i++)
+        for($i=1;$i<=2;$i++)
         {
             $user = new User;
-            $user->name =$faker->name;
             $user->email=$faker->email;
             $user->password = $Password;
             $user->role = $roles[array_rand($roles)];

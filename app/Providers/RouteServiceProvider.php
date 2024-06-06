@@ -54,7 +54,7 @@ class RouteServiceProvider extends ServiceProvider
                         'message' => 'Too many requests. Please try again later.',
                     ], Response::HTTP_TOO_MANY_REQUESTS, $headers);
                 }),
-                Limit::perMinute(10)->by($request->input('email'))->response(function (Request $request, array $headers) {
+                Limit::perMinute(100)->by($request->input('email'))->response(function (Request $request, array $headers) {
                     return response()->json([
                         'message' => 'Too many login attempts for this email. Please try again later.',
                     ], Response::HTTP_TOO_MANY_REQUESTS, $headers);
@@ -62,21 +62,6 @@ class RouteServiceProvider extends ServiceProvider
             ];
         });
 
-        //rate limiter for registration
-
-        RateLimiter::for('register', function (Request $request) {
-            return [
-                Limit::perMinute(50)->response(function (Request $request, array $headers) {
-                    return response()->json([
-                        'message' => 'Too many registration attempts. Please try again later.',
-                    ], Response::HTTP_TOO_MANY_REQUESTS, $headers);
-                }),
-                Limit::perMinute(5)->by($request->input('email'))->response(function (Request $request, array $headers) {
-                    return response()->json([
-                        'message' => 'Too many registration attempts for this email. Please try again later.',
-                    ], Response::HTTP_TOO_MANY_REQUESTS, $headers);
-                }),
-            ];
-        });
+       
     }
 }

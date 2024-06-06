@@ -35,46 +35,10 @@ public function userLogin($email,$password){
       return
        [
            'message'=>'Internal server error',
+           'error'=>$err->getMessage(),
            'status'=>0,
            
        ];
  }     
-}
-
-
-//customer Register
-public function  userRegister($name,$email,$password,$phoneNo,$role){
-    try{
-        DB::beginTransaction();
-        $User = User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-            'phone_no'=>$phoneNo,
-            'role'=>$role
-
-       ]);
-        
-         $token=$User->createToken("auth_token",[$role])->accessToken;
-         DB::commit();
-         return
-           [
-               'message' => 'User created successfully',
-               'status' =>1,
-               'token' => $token,
-               'user' => $User->makeHidden(['customer_password','created_at','updated_at']),
-           ];
-   }
-   catch(\Throwable $err){
-       DB::rollback();
-       $User = null;
-           if($User==null){
-               return [
-                     'message'=> 'internal server error',
-                     'status'=> '0',
-                     'error'=>$err->getMessage()
-               ];
-           }
-   }
 }
 }
