@@ -13,4 +13,9 @@ class Order extends Model
      'order_price'
        ];
    
+       public function recipe()
+       {
+           return $this->belongsTo(Recipe::class);
+       }
+     
     }

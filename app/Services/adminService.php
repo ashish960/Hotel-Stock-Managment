@@ -9,12 +9,16 @@ use App\Models\Recipe;
 use App\Models\Item;     
 use App\Models\Stock;
 use App\Models\Recipeprocess;
+use App\Models\Order;
+use App\Models\Stockreport;
+
+use function PHPUnit\Framework\isEmpty;
+
 //for admin Services
 
 class adminService{
 
-
-    //add vendor and item
+//add vendor and item
 
     public function addVendor($item,$vendor_name,$item_price){
         try{
@@ -83,6 +87,16 @@ public function addStock($item_name,$item_quantity,$outward_quantity){
             'inward_quantity'=>$inward_quantity,
             'outward_quantity'=>$outward_quantity
        ]);
+
+       $stockreport = Stockreport::create([
+        'item_name' => $item_name,
+        'vendor_name' => $vendor_name,
+        'item_quantity' => $item_quantity,
+        'inward_quantity'=>$inward_quantity,
+        'outward_quantity'=>$outward_quantity,
+        'item_price'=>$item_quantity*$vendor['item_price'],
+        'item_status'=>1,
+   ]);
          DB::commit();
 
          return
@@ -105,6 +119,15 @@ public function addStock($item_name,$item_quantity,$outward_quantity){
             $previousData->outward_quantity = $previousData['outward_quantity'] + $outward_quantity;
             $previousData->save();
         
+            $stockreport = Stockreport::create([
+                'item_name' => $previousData->item_name,
+                'vendor_name' => $previousData->vendor_name,
+                'item_quantity' => $item_quantity,
+                'inward_quantity'=>$inward_quantity,
+                'outward_quantity'=>$outward_quantity,
+                'item_price'=>$item_quantity*$vendor['item_price'],
+                'item_status'=>1,
+           ]);
          DB::commit();
 
     
@@ -142,8 +165,6 @@ public function addStock($item_name,$item_quantity,$outward_quantity){
 
 
  //add recipe
-
- //admin add stocks
 
 public function addRecipe($recipe_name){
     try{
@@ -184,8 +205,6 @@ public function addRecipe($recipe_name){
 
  //add recipe process
 
-
-
  public function recipeProcess($recipe_id,$item_id,$item_quantity){
     try{
         $recipes=Recipe::where(['id'=>$recipe_id])->first();
@@ -205,11 +224,11 @@ public function addRecipe($recipe_name){
        $recipes->save();
 
          DB::commit();
-        
-
          return
            [
                'message' => '1 item added to receipe process ',
+               'item'=>$item->makeHidden(['created_at','updated_at','vendor_name','item_price']),
+               'item_quantity'=>$item_quantity,
                'status' =>1, 
            ];
            
@@ -237,14 +256,12 @@ public function addRecipe($recipe_name){
 public function viewRecipe($recipe_name){
     try{
         $recipe = Recipe::where(['recipe_name'=>$recipe_name])->with('items')->first();
+        $recipe=$recipe->items->makeHidden(['created-at','updated_at','vendor_name','item_price']);
          return
            [
                'message' => 'recipe found successfully',
                'status' =>1,
-               
                'recipe' => $recipe->makeHidden(['created_at','updated_at']),
-               
-               
            ];
            
    }
@@ -262,6 +279,96 @@ public function viewRecipe($recipe_name){
   
 }
 
+
+
+//admin view stock
+
+public function viewStock(){
+    $data=Stock::all();
+    if($data == null){
+      return  [
+            'message' => 'no items in the stocks ',
+            'status' =>1,
+
+        ];
+    
+   
+    } else{
+        return  [
+            'message' => 'item found ',
+            'status' =>1,
+            'data'=> $data->makeHidden(['updated_at','created_at'])
+
+        ];
+    }
+}
+
+
+//admin view Order
+
+public function viewOrder(){
+    $data=Order::with('recipe')->get();
+    if($data == null){
+      return  [
+            'message' => 'no items in the order lists',
+            'status' =>1,
+
+        ];
+    
+   
+    } else{
+        return  [
+            'message' => 'item found ',
+            'status' =>1,
+            'data'=> $data->makeHidden(['updated_at','created_at','order_price'])
+
+        ];
+    }
+}
+
+
+
+//admin view Report
+
+public function viewReport($item_name,$date_from,$date_to){
+    try{  if($item_name == null){
+             if($date_from == $date_to){
+                 $data=Stockreport::whereDate('created_at',$date_from)->get();
+                 
+             }
+             else{
+                 $data=Stockreport::whereBetween('created_at', [$date_from, $date_to])->get();
+            }
+        }
+      else{
+            $data=Stockreport::where(['item_name'=>$item_name])->whereBetween('created_at', [$date_from, $date_to])->get();
+      }
+      $data=$data->toArray();
+      
+      if(empty($data)){
+        return [
+            'message'=>'no record of selected date and item found',
+            'status'=>1
+        ];
+      }
+      else{
+            return [
+                   'message'=>'record found',
+                   'data'=>$data,
+                   'status'=>1
+            ];
+      }
+
+
+}catch(\Throwable $err){
+       return[
+               'message'=>'internal server error',
+               'status'=>0,
+               'msg'=>$err->getmessage(),
+       ];
+}
+
+}
 
 
 }

@@ -31,23 +31,27 @@ Route::middleware(['throttle:login'])->group(function () {
 
 //admin
 
-Route::middleware(['auth:api','scopes:admin'])->group(function () {  
+Route::middleware(['auth:api','scopes:admin','throttle:user'])->group(function () {  
     Route::post('admin/addVendor',[adminController::class,'addVendor']);
     Route::post('admin/addStock',[adminController::class,'addStock']);
     Route::post('admin/addRecipe',[adminController::class,'addRecipe']);
     Route::post('admin/addRecipe-Process',[adminController::class,'recipeProcess']);
     Route::post('admin/viewRecipe',[adminController::class,'viewRecipe']);
+    Route::get('admin/viewStock',[adminController::class,'viewStock']);
+    Route::get('admin/viewOrder',[adminController::class,'viewOrder']);
+    Route::post('admin/viewReport',[adminController::class,'viewReport']);
+   
     });
+    
 
 
 
 //manager
     
-Route::middleware(['auth:api','throttle:login','scopes:manager'])->group(function () {  
-
+Route::middleware(['auth:api','throttle:user','scopes:manager'])->group(function () {  
     Route::post('manager/addOrder',[managerController::class,'addOrder']);
     Route::post('manager/OutwardQuantity',[managerController::class,'addOutward']);
-    Route::get('manager/stockReport',[managerController::class,'viewStockReport']);
+    
     });
 
     
